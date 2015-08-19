@@ -19,8 +19,9 @@
 #ifndef DD_LEGACY_MACROS
     #define DD_LEGACY_MACROS 1
 #endif
-// DD_LEGACY_MACROS is checked in the file itself
-#import "DDLegacyMacros.h"
+#if DD_LEGACY_MACROS
+    #import "DDLegacyMacros.h"
+#endif
 
 #if OS_OBJECT_USE_OBJC
     #define DISPATCH_QUEUE_REFERENCE_TYPE strong
@@ -97,11 +98,21 @@
  **/
 
 typedef NS_OPTIONS(NSUInteger, DDLogFlag) {
-    DDLogFlagError      = (1 << 0), // 0...00001
-    DDLogFlagWarning    = (1 << 1), // 0...00010
-    DDLogFlagInfo       = (1 << 2), // 0...00100
-    DDLogFlagDebug      = (1 << 3), // 0...01000
-    DDLogFlagVerbose    = (1 << 4)  // 0...10000
+    DDLogFlagError        = (1 << 0),// 0...00001
+    DDLogFlagWarning      = (1 << 1),// 0...00010
+    DDLogFlagInfo         = (1 << 2),// 0...00100
+    DDLogFlagDebug        = (1 << 3),// 0...01000
+    DDLogFlagVerbose      = (1 << 4),// 0...10000
+
+    //////////////////////////////////////////////////
+    // Modified by egg
+    DDLogFlagFuncIn       = (1 << 5),
+    DDLogFlagFuncOut      = (1 << 6),
+    DDLogFlagDelegateIn   = (1 << 7),
+    DDLogFlagDelegateOut  = (1 << 8),
+    DDLogFlagViewEventIn  = (1 << 9),
+    DDLogFlagViewEventOut = (1 << 10),
+    DDLogFlagBatman       = (1 << 11),
 };
 
 typedef NS_ENUM(NSUInteger, DDLogLevel) {
@@ -110,7 +121,13 @@ typedef NS_ENUM(NSUInteger, DDLogLevel) {
     DDLogLevelWarning   = (DDLogLevelError   | DDLogFlagWarning), // 0...00011
     DDLogLevelInfo      = (DDLogLevelWarning | DDLogFlagInfo),    // 0...00111
     DDLogLevelDebug     = (DDLogLevelInfo    | DDLogFlagDebug),   // 0...01111
-    DDLogLevelVerbose   = (DDLogLevelDebug   | DDLogFlagVerbose), // 0...11111
+    //////////////////////////////////////////////////
+    // DDLogLevelVerbose Modified by egg
+    DDLogLevelVerbose   = (DDLogLevelDebug   | DDLogFlagVerbose |
+                           DDLogFlagFuncIn | DDLogFlagFuncOut |
+                           DDLogFlagDelegateIn | DDLogFlagDelegateOut |
+                           DDLogFlagViewEventIn | DDLogFlagViewEventOut |
+                           DDLogFlagBatman), // 0...11111
     DDLogLevelAll       = NSUIntegerMax                           // 1111....11111 (DDLogLevelVerbose plus any other flags)
 };
 
@@ -429,15 +446,15 @@ NSString * DDExtractFileNameWithoutExtension(const char *filePath, BOOL copy);
     #define NS_DESIGNATED_INITIALIZER
 #endif
 
-typedef NS_OPTIONS(NSInteger, DDLogMessageOptions) {
-    DDLogMessageCopyFile     = 1 << 0,
-    DDLogMessageCopyFunction = 1 << 1
-};
-
 /**
  * The DDLogMessage class encapsulates information about the log message.
  * If you write custom loggers or formatters, you will be dealing with objects of this class.
  **/
+
+typedef NS_OPTIONS(NSInteger, DDLogMessageOptions) {
+    DDLogMessageCopyFile     = 1 << 0,
+    DDLogMessageCopyFunction = 1 << 1
+};
 
 @interface DDLogMessage : NSObject <NSCopying>
 {
